@@ -1,0 +1,662 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Verifica finale di geografia</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Patrick+Hand&display=swap">
+<style>
+/* Layout: foglio a quadretti su banco di legno; ogni esercizio ha una striscia di nastro con titolo colorato e un'etichetta "Completo". Nessuna correzione finché non si preme Fine verifica. */
+:root{
+  --desk:#7a5237;
+  --paper:#fffef9;
+  --grid:#c9dbee;
+  --ink:#1d3a9e;
+  --ink-soft:#44589f;
+  --red:#e0412b;
+  --green:#2f9b48;
+  --blue:#1f6fd6;
+  --pink:#e5509a;
+  --amber:#f0a500;
+  --tape:#f4edd4;
+  --outline:#2a2a2a;
+  --sel-bg:#d5e4ff;
+  --ok-bg:#dff3e2;
+  --no-bg:#fde2dd;
+  --green-t:#1d7a33;
+  --red-t:#bd2f1b;
+  --on-amber:#16181f;
+  --num-fg:#ffffff;
+  --font-display:'Anton','Impact','Arial Narrow',sans-serif;
+  --font-body:'Patrick Hand','Comic Sans MS','Segoe Print',cursive;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --desk:#2a1c13;--paper:#1c2133;--grid:#2b3552;--ink:#b9c8ff;--ink-soft:#93a5df;
+    --red:#ff7a66;--green:#5fd37a;--blue:#6aa7ff;--pink:#ff7ab8;--amber:#ffc23d;
+    --tape:#4a4230;--outline:#121218;--sel-bg:#2b4278;--ok-bg:#1f3a2a;--no-bg:#4a2523;
+    --green-t:#7fe39a;--red-t:#ff9a8a;--num-fg:#1a0f0d;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --desk:#2a1c13;--paper:#1c2133;--grid:#2b3552;--ink:#b9c8ff;--ink-soft:#93a5df;
+  --red:#ff7a66;--green:#5fd37a;--blue:#6aa7ff;--pink:#ff7ab8;--amber:#ffc23d;
+  --tape:#4a4230;--outline:#121218;--sel-bg:#2b4278;--ok-bg:#1f3a2a;--no-bg:#4a2523;
+  --green-t:#7fe39a;--red-t:#ff9a8a;--num-fg:#1a0f0d;
+  color-scheme:dark;
+}
+
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{
+  background-color:var(--desk);
+  background-image:repeating-linear-gradient(95deg,transparent 0 38px,rgba(0,0,0,.08) 38px 40px,transparent 40px 91px,rgba(255,255,255,.035) 91px 93px);
+  color:var(--ink);
+  font-family:var(--font-body);
+  font-size:20px;
+  line-height:1.35;
+  padding-left:max(16px,env(safe-area-inset-left,0px));
+  padding-right:max(16px,env(safe-area-inset-right,0px));
+  padding-block:20px 44px;
+}
+.sheet{
+  max-width:780px;margin:0 auto;
+  background-color:var(--paper);
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:24px 24px;
+  border-radius:6px;
+  box-shadow:0 12px 32px rgba(0,0,0,.38);
+  padding:22px clamp(14px,4vw,34px) 36px;
+  display:flex;flex-direction:column;gap:34px;
+}
+button{font:inherit}
+:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+
+/* Intestazione */
+.head{display:flex;flex-direction:column;gap:14px}
+.meta{display:flex;flex-wrap:wrap;align-items:center;gap:8px 18px}
+.meta label{color:var(--red-t)}
+.meta input{
+  font:inherit;color:var(--ink);background:transparent;
+  border:0;border-bottom:2px solid var(--ink);min-width:0;flex:1 1 180px;max-width:320px;padding:4px 2px;border-radius:0;
+}
+.date{margin-left:auto;color:var(--ink-soft)}
+.mega-wrap{background:var(--tape);padding:14px 10px 10px;overflow:hidden;box-shadow:0 2px 0 rgba(0,0,0,.2);transform:rotate(-.6deg);text-align:center}
+.mega{
+  margin:0;font-family:var(--font-display);font-weight:400;
+  font-size:clamp(44px,13.5vw,120px);line-height:1;letter-spacing:.01em;
+  -webkit-text-stroke:2px var(--outline);paint-order:stroke fill;
+  display:flex;justify-content:center;
+}
+.mega .g{color:var(--green)}
+.mega .b{color:var(--blue);border-left:4px solid var(--red);padding-left:.04em;margin-left:.04em}
+.kicker{margin:0;color:var(--red-t);text-transform:uppercase;letter-spacing:.14em;font-size:18px}
+.sub{margin:0;max-width:62ch}
+.progress{height:12px;border:2px solid var(--ink);border-radius:999px;background:var(--paper);overflow:hidden}
+.bar{height:100%;width:0;background:var(--green);transition:width .3s ease}
+.prog-txt{margin:6px 0 0;color:var(--ink-soft);font-size:18px}
+
+/* Esercizi */
+#exercises{display:flex;flex-direction:column;gap:38px}
+.ex{display:flex;flex-direction:column;gap:14px}
+.strip{
+  display:flex;align-items:center;gap:6px 12px;flex-wrap:wrap;
+  background:var(--tape);padding:10px 16px 8px 12px;margin-inline:-4px;
+  transform:rotate(-.5deg);box-shadow:0 2px 0 rgba(0,0,0,.2);border-radius:2px;
+}
+.num{
+  flex:none;width:40px;height:40px;border-radius:50%;background:var(--red);color:var(--num-fg);
+  display:grid;place-items:center;font-family:var(--font-display);font-size:22px;
+}
+.strip h2{
+  margin:0;flex:1 1 170px;min-width:0;
+  font-family:var(--font-display);font-weight:400;font-size:clamp(24px,6.5vw,34px);
+  line-height:1.1;letter-spacing:.02em;text-transform:uppercase;text-wrap:balance;
+  -webkit-text-stroke:1.2px var(--outline);paint-order:stroke fill;
+}
+.state{
+  margin-left:auto;font-size:18px;white-space:nowrap;
+  color:var(--ink-soft);background:var(--paper);border:2px solid var(--ink-soft);border-radius:999px;padding:2px 14px;
+}
+.state.done{color:var(--green-t);background:var(--ok-bg);border-color:var(--green)}
+.state.fin{color:var(--ink);border-color:var(--ink)}
+.istr{margin:0;color:var(--ink-soft)}
+.exbody{display:flex;flex-direction:column;gap:12px}
+.exbody.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:12px}
+
+.q{background:var(--paper);border:2px solid var(--ink-soft);border-radius:10px;padding:12px 14px;min-width:0}
+.prompt{margin:0}
+.prompt .g{color:var(--green-t);font-family:var(--font-display);letter-spacing:.04em}
+.blank{display:inline-block;min-width:3.2em;border-bottom:2px solid var(--ink);margin-inline:2px}
+.opts{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px}
+.opt{
+  color:var(--ink);background:var(--tape);border:2px solid var(--ink);border-radius:999px;
+  padding:8px 18px 8px 12px;min-height:44px;cursor:pointer;display:inline-flex;align-items:center;gap:10px;text-align:left;
+}
+.dot{flex:none;width:18px;height:18px;border-radius:50%;border:2px solid var(--ink);background:var(--paper)}
+.opt.sel{background:var(--sel-bg);border-color:var(--blue);box-shadow:inset 0 0 0 2px var(--blue)}
+.opt.sel .dot{background:var(--ink);box-shadow:inset 0 0 0 3px var(--paper)}
+@media (hover:hover){.opt:hover:not(:disabled):not(.sel),.cell:hover:not(:disabled):not(.paired){background:var(--amber);color:var(--on-amber)}}
+.opt:disabled,.cell:disabled{cursor:default;color:var(--ink)}
+.opt.ok{background:var(--ok-bg);border-color:var(--green)}
+.opt.no{background:var(--no-bg);border-color:var(--red)}
+.opt.ok .dot,.opt.no .dot{background:var(--paper)}
+.mark{font-weight:700}
+.opt.ok .mark{color:var(--green-t)}
+.opt.no .mark{color:var(--red-t)}
+.fb{margin:8px 0 0}
+.fb:empty{display:none}
+.fb.good{color:var(--green-t)}
+.fb.bad{color:var(--red-t)}
+.q.compact{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px}
+.q.compact .prompt{font-size:21px;flex:1 1 140px}
+.q.compact .opts{margin:0}
+.q.compact .fb{flex-basis:100%;margin:0}
+
+/* Collega */
+.match{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:12px 14px}
+.col{display:flex;flex-direction:column;gap:10px;min-width:0}
+.cell{
+  position:relative;color:var(--ink);background:var(--tape);border:2px solid var(--ink);border-radius:14px;
+  padding:10px 12px 8px 20px;min-height:56px;cursor:pointer;text-align:left;display:flex;align-items:center;gap:8px;min-width:0;
+  overflow-wrap:anywhere;
+}
+.cell.sel{background:var(--amber);color:var(--on-amber);border-color:var(--outline)}
+.cell.paired{border-color:var(--pc);box-shadow:inset 0 0 0 2px var(--pc)}
+.cell.ok{background:var(--ok-bg)}
+.cell.no{background:var(--no-bg)}
+.badge{
+  position:absolute;top:-10px;left:-8px;min-width:26px;height:26px;border-radius:50%;background:var(--pc);color:#fff;font-size:16px;
+  display:grid;place-items:center;text-shadow:0 0 2px rgba(0,0,0,.6);border:2px solid var(--paper);
+}
+.cell .lbl{font-size:19px;letter-spacing:.03em;text-transform:uppercase;overflow-wrap:break-word;min-width:0}
+.cell .txt{font-size:18px;line-height:1.2}
+.av{flex:none;width:50px;height:50px;border-radius:12px;background:var(--tape)}
+.av .st{fill:none;stroke:var(--outline);stroke-width:1.6}
+.av .st2{stroke:var(--outline);stroke-width:1.4}
+.av .ink{fill:var(--outline)}
+.hint{margin:10px 0 0;color:var(--ink-soft);font-size:18px}
+.corr{margin:12px 0 0;padding:10px 12px;border-left:5px solid var(--red);background:var(--no-bg)}
+.corr p{margin:0 0 6px}
+.corr ul{margin:0;padding-left:20px}
+.corr b{font-weight:400;color:var(--red-t);text-transform:uppercase;letter-spacing:.03em}
+
+/* Risposta aperta */
+textarea{
+  width:100%;min-height:96px;margin-top:10px;font:inherit;color:var(--ink);background:var(--paper);
+  border:2px solid var(--ink);border-radius:10px;padding:10px;resize:vertical;
+}
+.btn{
+  color:var(--ink);background:var(--tape);border:2px solid var(--ink);border-radius:999px;padding:8px 20px;min-height:44px;cursor:pointer;
+}
+.btn.primary{background:var(--red);color:var(--num-fg);border-color:var(--outline)}
+.btn.sel{background:var(--sel-bg);border-color:var(--blue);box-shadow:inset 0 0 0 2px var(--blue)}
+.adult{margin:12px 0 0;padding:10px 12px;border-left:5px solid var(--green);background:var(--ok-bg)}
+.adult p{margin:0 0 8px}
+.score-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+
+/* Fine e risultato */
+.finish{display:flex;flex-direction:column;gap:14px;align-items:flex-start}
+.confirm{display:flex;flex-direction:column;gap:12px;border:2px dashed var(--ink-soft);border-radius:12px;padding:14px;background:var(--paper);max-width:100%}
+.confirm p{margin:0}
+.result{display:flex;flex-direction:column;gap:14px;scroll-margin-top:16px}
+.big{margin:0;font-family:var(--font-display);font-size:clamp(54px,16vw,96px);line-height:1;color:var(--blue);-webkit-text-stroke:1.6px var(--outline);paint-order:stroke fill}
+.big small{font-size:.5em;color:var(--ink-soft);-webkit-text-stroke:0}
+.stars{display:flex;gap:6px}
+.stars svg{width:38px;height:38px}
+.stars .on{fill:var(--amber);stroke:var(--outline);stroke-width:1.5}
+.stars .off{fill:none;stroke:var(--ink-soft);stroke-width:1.5}
+.review{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:8px}
+.review li{background:var(--paper);border:2px solid var(--ink-soft);border-radius:10px;padding:8px 12px}
+.review b{color:var(--red-t);font-weight:400}
+.pending{margin:0;padding:8px 12px;border:2px dashed var(--amber);border-radius:10px}
+
+@media (max-width:460px){
+  body{font-size:19px}
+  .match{gap:10px;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr)}
+  .cell.hasav{flex-direction:column;justify-content:center;text-align:center;gap:4px}
+  .av{width:42px;height:42px}
+  .cell{padding:8px 8px 6px 16px}
+  .cell.hasav{padding:10px 8px 6px}
+  .cell .lbl{font-size:16px}
+  .cell .txt{font-size:16px}
+  .date{margin-left:0}
+}
+@media (prefers-reduced-motion:reduce){
+  .bar{transition:none}
+}
+</style>
+</head>
+<body>
+
+
+<main class="sheet">
+  <header class="head">
+    <div class="meta">
+      <label for="nome">Nome</label>
+      <input id="nome" type="text" autocomplete="off" placeholder="scrivi qui">
+      <span class="date" id="oggi"></span>
+    </div>
+    <div class="mega-wrap"><h1 class="mega" aria-label="Geografia"><span class="g">GEO</span><span class="b">GRAFIA</span></h1></div>
+    <p class="kicker">Verifica finale</p>
+    <p class="sub">Tocca la risposta che pensi sia giusta. Puoi cambiarla quante volte vuoi. La correzione compare solo quando premi <b>Fine verifica</b>, in fondo alla pagina.</p>
+    <div>
+      <div class="progress" role="progressbar" aria-label="Esercizi completi" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div class="bar" id="bar"></div></div>
+      <p class="prog-txt" id="prog"></p>
+    </div>
+  </header>
+
+  <div id="exercises"></div>
+
+  <div class="finish" id="finish">
+    <button class="btn primary" id="fin" type="button">Fine verifica</button>
+    <div class="confirm" id="confirm" hidden>
+      <p id="ctext"></p>
+      <div class="score-row">
+        <button class="btn primary" id="yes" type="button">Sì, consegno</button>
+        <button class="btn" id="back" type="button">Torna alla verifica</button>
+      </div>
+    </div>
+  </div>
+
+  <section class="result" id="result" hidden aria-live="polite">
+    <div class="strip"><h2 id="rtitle"></h2></div>
+    <p class="big"><span id="rs">0</span> <small>su <span id="rm">0</span></small></p>
+    <div class="stars" id="stars" role="img"></div>
+    <p id="rmsg" style="margin:0"></p>
+    <p class="pending" id="pend" hidden></p>
+    <ul class="review" id="review"></ul>
+    <p style="margin:0;color:var(--ink-soft)">Sali nella pagina per vedere le risposte giuste esercizio per esercizio.</p>
+    <div><button class="btn" id="again" type="button">Rifai la verifica</button></div>
+  </section>
+</main>
+
+<script>
+(function(){
+  'use strict';
+  var COLORS=['var(--blue)','var(--pink)','var(--amber)','var(--green)','var(--red)'];
+  var PAIRC=['#1f6fd6','#e5509a','#d98f00','#2f9b48','#e0412b','#8a5cd6','#12a0a0','#d9731a'];
+  var TOPICS={
+    geo:{name:'Cos’è la geografia',where:'quaderno del 15 ottobre'},
+    cosa:{name:'Cosa studia la geografia (paesaggi, clima, flora, fauna)',where:'quaderno del 15 ottobre'},
+    aiut:{name:'Gli aiutanti del geografo',where:'quaderno del 29 ottobre'},
+    libro:{name:'Studiose e studiosi del territorio',where:'libro, pagine 6-7'}
+  };
+  var host,exs=[],finished=false;
+
+  function $(s,r){return (r||document).querySelector(s);}
+  function el(tag,cls,html){var e=document.createElement(tag);if(cls)e.className=cls;if(html!=null)e.innerHTML=html;return e;}
+  function rainbow(t){var i=0;return Array.from(t).map(function(ch){return ch===' '?' ':'<span style="color:'+COLORS[i++%COLORS.length]+'">'+ch+'</span>';}).join('');}
+  function shuffle(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t;}return a;}
+  function plural(n,one,many){return n===1?one:many;}
+
+  /* Aiutanti del geografo, disegnati in stile quaderno */
+  var BODY='<path d="M16 63 q1-17 16-17 q15 0 16 17z" fill="#62b562" class="st2"/>';
+  var FACE='<circle cx="32" cy="32" r="13" fill="#f2a0c4" class="st2"/><circle cx="27.5" cy="31" r="1.7" class="ink"/><circle cx="36.5" cy="31" r="1.7" class="ink"/><path d="M27.5 37 q4.5 4 9 0" class="st" stroke-linecap="round"/>';
+  var HAIR='<path d="M19.5 30 q-1-15 12.5-15 q13.5 0 12.5 15 q-5-8-12.5-7 q-8-1-12.5 7z" fill="#6b4630"/>';
+  var SAFARI='<ellipse cx="32" cy="19" rx="19" ry="4.5" fill="#efe2b0" class="st2"/><path d="M22 19 q1-11 10-11 q9 0 10 11z" fill="#efe2b0" class="st2"/><rect x="22" y="15" width="20" height="3" fill="#6b4630"/>';
+  var HELMET='<path d="M19 22 q1-13 13-13 q12 0 13 13z" fill="#f28a2e" class="st2"/><rect x="18" y="21" width="28" height="3.5" rx="1.5" fill="#f28a2e" class="st2"/>';
+  var GOGGLES='<rect x="20.5" y="27" width="23" height="7" rx="3" fill="#f5a623" fill-opacity=".85" class="st2"/>';
+  var ROLES={
+    geologo:{top:GOGGLES,prop:'<path d="M2 60 q2-13 14-11 q8 2 6 11z" fill="#8b8b8b" class="st2"/><path d="M44 52 l6-5 l6 5 l-3 7 h-6z" fill="#4a7fe0" class="st2"/>'},
+    botanico:{top:SAFARI,prop:'<path d="M46 58 q0-14 15-16 q1 14-15 16z" fill="#4caf50" class="st2"/><path d="M46 58 q6-6 11-12" class="st"/>'},
+    zoologo:{top:HELMET,prop:'<rect x="24" y="46" width="7" height="10" rx="2" fill="#333"/><rect x="33" y="46" width="7" height="10" rx="2" fill="#333"/><rect x="29" y="49" width="6" height="3" fill="#333"/><circle cx="27.5" cy="46" r="3" fill="#6cc5f0" class="st2"/><circle cx="36.5" cy="46" r="3" fill="#6cc5f0" class="st2"/>'},
+    linguista:{top:'',prop:'<rect x="2" y="49" width="16" height="4" fill="#e0412b" class="st2"/><rect x="3" y="53" width="14" height="4" fill="#4a7fe0" class="st2"/><rect x="2" y="57" width="16" height="4" fill="#f0c020" class="st2"/><ellipse cx="50" cy="12" rx="13" ry="8" fill="#fff" class="st2"/><text x="50" y="15" text-anchor="middle" font-size="9" font-family="Arial,sans-serif" font-weight="700" class="ink">ABC</text>'},
+    meteorologo:{top:'',prop:'<circle cx="52" cy="12" r="7" fill="#ffd21f" class="st2"/><path d="M2 22 q0-9 8-9 q3-5 9-1 q8 0 7 10z" fill="#cfd8e3" class="st2"/><path d="M8 28 l-2 5 M14 28 l-2 5" class="st" stroke-linecap="round"/>'},
+    cartografo:{top:'',prop:'<path d="M2 52 l10-3 l10 3 l10-3 v12 l-10 3 l-10-3 l-10 3z" fill="#9dd3a8" class="st2"/><circle cx="54" cy="52" r="8" fill="#fff" class="st2"/><path d="M54 46 l2.5 6 l-2.5 6 l-2.5-6z" fill="#e0412b"/>'},
+    ecologo:{top:HELMET,prop:'<rect x="53" y="48" width="4" height="12" fill="#8a5a2b"/><circle cx="55" cy="43" r="9" fill="#4caf50" class="st2"/><path d="M8 50 q-6 8 0 11 q6-3 0-11z" fill="#4aa8f0" class="st2"/>'},
+    antropologo:{top:SAFARI,prop:'<path d="M6 46 h12 q4 6-1 16 h-10 q-5-10-1-16z" fill="#e0412b" class="st2"/><path d="M7 51 h10" stroke="#f0c020" stroke-width="2"/>'}
+  };
+  function avatar(role){
+    var r=ROLES[role];
+    return '<svg class="av" viewBox="0 0 64 64" aria-hidden="true">'+BODY+FACE+HAIR+r.top+r.prop+'</svg>';
+  }
+  function labelOnly(p){return '<span class="lbl">'+p.l+'</span>';}
+
+  /* Contenuto: solo dalle pagine del quaderno e del libro */
+  var DEFS=[
+    {title:'Completa la parola',instr:'La parola GEOGRAFIA deriva dalla lingua greca.',kind:'choice',items:[
+      {id:'1a',topic:'geo',prompt:'<b class="g">GEO</b> significa…',opts:['mare','terra','cielo'],ans:1},
+      {id:'1b',topic:'geo',prompt:'<b class="g">GRAFIA</b> significa…',opts:['disegno / scrittura','calcolo','canto'],ans:0}
+    ]},
+    {title:'Completa la frase',kind:'choice',items:[
+      {id:'2a',topic:'geo',prompt:'La geografia è la scienza che studia, descrive e rappresenta la <span class="blank"></span> nei suoi diversi aspetti.',opts:['Luna','Terra','città'],ans:1},
+      {id:'2b',topic:'geo',prompt:'Il geografo è colui che studia, <span class="blank"></span> e descrive i paesaggi della Terra.',opts:['osserva','cucina','dipinge'],ans:0},
+      {id:'2c',topic:'cosa',prompt:'I paesaggi antropici sono i luoghi abitati dagli <span class="blank"></span>.',opts:['animali','uomini','alberi'],ans:1}
+    ]},
+    {title:'Collega le coppie',instr:'Tocca una voce a sinistra e poi quella giusta a destra. Per cambiare, tocca di nuovo una voce già collegata.',kind:'match',topic:'cosa',left:labelOnly,pairs:[
+      {l:'La flora',r:'le piante'},
+      {l:'La fauna',r:'gli animali'},
+      {l:'Il clima',r:'il tempo meteorologico'},
+      {l:'I paesaggi naturali',r:'montagna, mare…'},
+      {l:'I paesaggi antropici',r:'luoghi abitati dagli uomini'}
+    ]},
+    {title:'Vero o falso?',kind:'choice',compact:true,items:[
+      {id:'4a',topic:'cosa',prompt:'La fauna sono le piante.',opts:['Vero','Falso'],ans:1},
+      {id:'4b',topic:'geo',prompt:'Il geografo osserva e descrive i paesaggi della Terra.',opts:['Vero','Falso'],ans:0},
+      {id:'4c',topic:'cosa',prompt:'Un luogo abitato dagli uomini è un paesaggio antropico.',opts:['Vero','Falso'],ans:0},
+      {id:'4d',topic:'cosa',prompt:'La montagna è un paesaggio antropico.',opts:['Vero','Falso'],ans:1},
+      {id:'4e',topic:'libro',prompt:'La meteorologia studia i fenomeni dell’atmosfera su periodi lunghissimi.',opts:['Vero','Falso'],ans:1}
+    ]},
+    {title:'Naturale o antropico?',instr:'Naturale: lo ha fatto la natura. Antropico: lo hanno costruito gli uomini.',kind:'choice',compact:true,cls:'grid2',items:[
+      {id:'5a',topic:'cosa',prompt:'Il mare',opts:['Naturale','Antropico'],ans:0},
+      {id:'5b',topic:'cosa',prompt:'Le case di un paese',opts:['Naturale','Antropico'],ans:1},
+      {id:'5c',topic:'cosa',prompt:'Una montagna',opts:['Naturale','Antropico'],ans:0},
+      {id:'5d',topic:'cosa',prompt:'Un palazzo',opts:['Naturale','Antropico'],ans:1}
+    ]},
+    {title:'Chi studia cosa?',instr:'Collega ogni aiutante del geografo a quello che studia.',kind:'match',topic:'aiut',
+      left:function(p){return avatar(p.k)+'<span class="lbl">'+p.l+'</span>';},
+      pairs:[
+        {k:'geologo',l:'Geologo',r:'Studia le rocce'},
+        {k:'botanico',l:'Botanico',r:'Studia le piante (la flora)'},
+        {k:'zoologo',l:'Zoologo',r:'Studia gli animali (la fauna)'},
+        {k:'linguista',l:'Linguista',r:'Studia le lingue e la loro formazione'},
+        {k:'meteorologo',l:'Meteorologo',r:'Studia i fenomeni che avvengono nell’atmosfera'},
+        {k:'cartografo',l:'Cartografo',r:'Realizza le carte geografiche e le mappe, anche con le immagini dei satelliti'},
+        {k:'ecologo',l:'Ecologo',r:'Studia come funzionano gli ecosistemi'},
+        {k:'antropologo',l:'Antropologo',r:'Studia le diverse culture'}
+      ]},
+    {title:'Chi sono?',instr:'Leggi l’indizio e scegli il nome giusto.',kind:'choice',items:[
+      {id:'7a',topic:'aiut',prompt:'Realizzo le carte geografiche e le mappe, anche con le immagini dei satelliti. Sono il…',opts:['Geologo','Zoologo','Cartografo'],ans:2},
+      {id:'7b',topic:'aiut',prompt:'Studio i fenomeni che avvengono nell’atmosfera. Sono il…',opts:['Meteorologo','Botanico','Linguista'],ans:0},
+      {id:'7c',topic:'aiut',prompt:'Studio le piante (la flora). Sono il…',opts:['Ecologo','Botanico','Antropologo'],ans:1}
+    ]},
+    {title:'Per imparare',instr:'Collega ogni disciplina agli studi di cui si occupa (libro, pagina 7).',kind:'match',topic:'libro',left:labelOnly,pairs:[
+      {l:'Antropologia',r:'Studia le tradizioni e i modi di pensare delle popolazioni.'},
+      {l:'Zoologia',r:'Studia gli animali e il loro ambiente.'},
+      {l:'Climatologia',r:'Studia i cambiamenti climatici.'},
+      {l:'Geologia',r:'Studia le rocce, la loro formazione e le loro trasformazioni.'},
+      {l:'Ecologia',r:'Studia le relazioni tra i viventi e l’ambiente.'},
+      {l:'Cartografia',r:'Rappresenta lo spazio con carte geografiche.'},
+      {l:'Linguistica',r:'Studia le lingue e la loro formazione.'}
+    ]},
+    {title:'Dal libro',instr:'Domande sulle pagine 6 e 7.',kind:'choice',items:[
+      {id:'9a',topic:'libro',prompt:'La geologia studia il suolo e le <span class="blank"></span>.',opts:['rocce','nuvole','lingue'],ans:0},
+      {id:'9b',topic:'libro',prompt:'L’ecologia studia gli ecosistemi, cioè le relazioni tra le piante, gli animali e <span class="blank"></span>.',opts:['le mappe geografiche','le lingue dei popoli','l’ambiente che li circonda'],ans:2},
+      {id:'9c',topic:'libro',prompt:'La linguistica studia anche la distribuzione geografica delle lingue e dei <span class="blank"></span>.',opts:['vulcani','dialetti','fiumi'],ans:1}
+    ]},
+    {title:'Rispondi con parole tue',kind:'open',topic:'libro',max:2,
+      prompt:'Perché geografe e geografi collaborano con tanti altri studiosi?',
+      sample:'Perché il loro è un lavoro complesso. Per conoscere tutti gli aspetti di un territorio (rocce, clima, piante, animali, persone, lingue…) servono altri scienziati che li studiano bene.'}
+  ];
+
+  function section(n,d){
+    var s=el('section','ex');
+    var strip=el('div','strip');
+    strip.appendChild(el('span','num',String(n)));
+    strip.appendChild(el('h2','',rainbow(d.title)));
+    var pill=el('span','state','Da completare');
+    strip.appendChild(pill);
+    s.appendChild(strip);
+    if(d.instr)s.appendChild(el('p','istr',d.instr));
+    var b=el('div','exbody'+(d.cls?' '+d.cls:''));
+    s.appendChild(b);
+    host.appendChild(s);
+    return {body:b,pill:pill};
+  }
+
+  /* Scelta singola: la risposta si può cambiare finché non finisce la verifica */
+  function choiceEx(d,body){
+    var ans={},qs=[];
+    d.items.forEach(function(it){
+      ans[it.id]=-1;
+      var q=el('div','q'+(d.compact?' compact':''));
+      q.appendChild(el('p','prompt',it.prompt));
+      var opts=el('div','opts');
+      var fb=el('p','fb');
+      var btns=it.opts.map(function(t,i){
+        var b=el('button','opt','<span class="dot" aria-hidden="true"></span><span class="t">'+t+'</span><span class="mark"></span>');
+        b.type='button';b.setAttribute('aria-pressed','false');
+        b.addEventListener('click',function(){
+          if(finished)return;
+          ans[it.id]=(ans[it.id]===i?-1:i);
+          refreshAll();
+        });
+        opts.appendChild(b);
+        return b;
+      });
+      q.appendChild(opts);q.appendChild(fb);body.appendChild(q);
+      qs.push({it:it,btns:btns,fb:fb});
+    });
+    return {
+      max:d.items.length,
+      complete:function(){return qs.every(function(x){return ans[x.it.id]>=0;});},
+      missing:function(){return qs.filter(function(x){return ans[x.it.id]<0;}).length;},
+      score:function(){return qs.filter(function(x){return ans[x.it.id]===x.it.ans;}).length;},
+      lost:function(map){qs.forEach(function(x){if(ans[x.it.id]!==x.it.ans)map[x.it.topic]=(map[x.it.topic]||0)+1;});},
+      refresh:function(){
+        qs.forEach(function(x){
+          var a=ans[x.it.id];
+          x.btns.forEach(function(b,i){
+            var sel=a===i;
+            b.setAttribute('aria-pressed',sel?'true':'false');
+            var mk=b.querySelector('.mark');
+            if(finished){
+              var ok=i===x.it.ans;
+              b.disabled=true;
+              b.classList.remove('sel');
+              b.classList.toggle('ok',ok);
+              b.classList.toggle('no',sel&&!ok);
+              mk.textContent=ok?'✓':(sel?'✗':'');
+            }else{
+              b.classList.toggle('sel',sel);
+            }
+          });
+          if(finished){
+            var right=a===x.it.ans;
+            x.fb.className='fb '+(right?'good':'bad');
+            x.fb.textContent=right?'Giusto.':(a<0?'Non hai risposto. ':'')+'La risposta giusta è: '+x.it.opts[x.it.ans]+'.';
+          }
+        });
+      }
+    };
+  }
+
+  /* Collega: si può scollegare e ricollegare quante volte si vuole */
+  function matchEx(d,body){
+    var n=d.pairs.length,L2R=[],R2L=[],i;
+    for(i=0;i<n;i++){L2R.push(-1);R2L.push(-1);}
+    var order=shuffle(d.pairs.map(function(p,k){return k;}));
+    var sel=null,lb=[],rb=[];
+    var q=el('div','q'),g=el('div','match'),lc=el('div','col'),rc=el('div','col');
+    var corr=el('div','corr');corr.hidden=true;
+
+    function unpairL(l){var r=L2R[l];if(r>=0){R2L[r]=-1;L2R[l]=-1;}}
+    function unpairR(r){var l=R2L[r];if(l>=0){L2R[l]=-1;R2L[r]=-1;}}
+    function click(side,k){
+      if(sel&&sel.side!==side){
+        var l=side==='L'?k:sel.i,r=side==='R'?k:sel.i;
+        unpairL(l);unpairR(r);
+        L2R[l]=r;R2L[r]=l;sel=null;return;
+      }
+      if(sel&&sel.side===side&&sel.i===k){sel=null;return;}
+      if(side==='L')unpairL(k);else unpairR(k);
+      sel={side:side,i:k};
+    }
+    function mk(side,k){
+      var html=side==='L'?d.left(d.pairs[k]):'<span class="txt">'+d.pairs[k].r+'</span>';
+      var b=el('button','cell'+(html.indexOf('class="av"')>=0?' hasav':''),html);
+      b.type='button';b.setAttribute('aria-pressed','false');
+      b.addEventListener('click',function(){if(finished)return;click(side,k);refreshAll();});
+      return b;
+    }
+    for(i=0;i<n;i++){lb[i]=mk('L',i);lc.appendChild(lb[i]);}
+    order.forEach(function(k){rb[k]=mk('R',k);rc.appendChild(rb[k]);});
+    g.appendChild(lc);g.appendChild(rc);q.appendChild(g);q.appendChild(corr);body.appendChild(q);
+
+    function deco(b,num,color){
+      var old=b.querySelector('.badge');if(old)old.remove();
+      b.classList.remove('paired');b.style.removeProperty('--pc');
+      if(num){b.insertBefore(el('span','badge',String(num)),b.firstChild);b.classList.add('paired');b.style.setProperty('--pc',color);}
+    }
+    function score(){var s=0;for(var k=0;k<n;k++)if(L2R[k]===k)s++;return s;}
+    return {
+      max:n,
+      complete:function(){return L2R.every(function(r){return r>=0;});},
+      missing:function(){return L2R.filter(function(r){return r<0;}).length;},
+      score:score,
+      lost:function(map){var s=score();if(s<n)map[d.topic]=(map[d.topic]||0)+(n-s);},
+      refresh:function(){
+        var k;
+        for(k=0;k<n;k++){
+          var r=L2R[k];
+          deco(lb[k],r>=0?k+1:0,PAIRC[k%PAIRC.length]);
+          lb[k].classList.toggle('sel',!!sel&&sel.side==='L'&&sel.i===k);
+          lb[k].setAttribute('aria-pressed',(!!sel&&sel.side==='L'&&sel.i===k)?'true':'false');
+        }
+        for(k=0;k<n;k++){
+          var l=R2L[k];
+          deco(rb[k],l>=0?l+1:0,PAIRC[(l>=0?l:0)%PAIRC.length]);
+          rb[k].classList.toggle('sel',!!sel&&sel.side==='R'&&sel.i===k);
+          rb[k].setAttribute('aria-pressed',(!!sel&&sel.side==='R'&&sel.i===k)?'true':'false');
+        }
+        if(finished){
+          var wrong=[];
+          for(k=0;k<n;k++){
+            lb[k].disabled=true;rb[k].disabled=true;
+            lb[k].classList.remove('sel');rb[k].classList.remove('sel');
+            var okL=L2R[k]===k;
+            lb[k].classList.toggle('ok',okL);lb[k].classList.toggle('no',!okL);
+            if(R2L[k]>=0){var okR=R2L[k]===k;rb[k].classList.toggle('ok',okR);rb[k].classList.toggle('no',!okR);}
+            if(!okL)wrong.push('<li><b>'+d.pairs[k].l+'</b>: '+d.pairs[k].r+'</li>');
+          }
+          corr.hidden=false;
+          corr.innerHTML=wrong.length?'<p>Le coppie giuste erano:</p><ul>'+wrong.join('')+'</ul>':'<p style="margin:0;color:var(--green-t)">Tutte le coppie sono giuste.</p>';
+          if(!wrong.length)corr.style.cssText='border-left-color:var(--green);background:var(--ok-bg)';
+        }
+      }
+    };
+  }
+
+  /* Risposta aperta: la corregge un adulto dopo la consegna */
+  function openEx(d,body){
+    var q=el('div','q'),score=-1;
+    q.appendChild(el('p','prompt',d.prompt));
+    var ta=el('textarea');ta.id='risposta-aperta';ta.setAttribute('aria-label','La tua risposta');
+    ta.placeholder='Scrivi qui la tua risposta.';
+    ta.addEventListener('input',function(){refreshAll();});
+    q.appendChild(ta);
+    var adult=el('div','adult');adult.hidden=true;
+    adult.innerHTML='<p><b>Risposta di esempio:</b> '+d.sample+'</p><p>Un adulto legge la risposta e assegna il punteggio:</p>';
+    var row=el('div','score-row'),sb=[];
+    [['0 punti',0],['1 punto',1],['2 punti',2]].forEach(function(s){
+      var b=el('button','btn',s[0]);b.type='button';
+      b.addEventListener('click',function(){
+        score=s[1];
+        sb.forEach(function(x){x.classList.remove('sel');});
+        b.classList.add('sel');
+        refreshAll();updateResult();
+      });
+      sb.push(b);row.appendChild(b);
+    });
+    adult.appendChild(row);q.appendChild(adult);body.appendChild(q);
+    return {
+      max:d.max,
+      complete:function(){return ta.value.trim().length>0;},
+      missing:function(){return ta.value.trim().length>0?0:1;},
+      score:function(){return score<0?0:score;},
+      pending:function(){return finished&&score<0;},
+      lost:function(map){if(score>=0&&score<d.max)map[d.topic]=(map[d.topic]||0)+(d.max-score);},
+      refresh:function(){if(finished){ta.readOnly=true;adult.hidden=false;}}
+    };
+  }
+
+  function refreshAll(){
+    var done=0;
+    exs.forEach(function(ex){
+      ex.refresh();
+      var c=ex.complete();
+      if(c)done++;
+      if(finished){
+        ex.pill.textContent=(ex.pending&&ex.pending())?'da correggere':ex.score()+' su '+ex.max;
+        ex.pill.className='state fin';
+      }else{
+        ex.pill.textContent=c?'✓ Completo':'Da completare';
+        ex.pill.className='state'+(c?' done':'');
+      }
+    });
+    $('#bar').style.width=(exs.length?Math.round(done/exs.length*100):0)+'%';
+    $('.progress').setAttribute('aria-valuenow',String(exs.length?Math.round(done/exs.length*100):0));
+    $('#prog').textContent='Esercizi completi: '+done+' su '+exs.length;
+  }
+
+  function star(on){
+    return '<svg viewBox="0 0 24 24" aria-hidden="true"><path class="'+(on?'on':'off')+'" d="M12 2.5l2.9 6.1 6.6.8-4.9 4.6 1.3 6.6L12 17.2 6.1 20.6l1.3-6.6L2.5 9.4l6.6-.8z"/></svg>';
+  }
+
+  function updateResult(){
+    var pts=0,max=0,lost={},pending=false;
+    exs.forEach(function(ex){
+      pts+=ex.score();max+=ex.max;ex.lost(lost);
+      if(ex.pending&&ex.pending())pending=true;
+    });
+    var nome=($('#nome').value||'').trim();
+    $('#rtitle').innerHTML=rainbow('Risultato');
+    $('#rs').textContent=String(pts);
+    $('#rm').textContent=String(max);
+    var pct=max?pts/max*100:0;
+    var filled=Math.round(pct/100*5),st='',i;
+    for(i=0;i<5;i++)st+=star(i<filled);
+    $('#stars').innerHTML=st;
+    $('#stars').setAttribute('aria-label',filled+' stelle su 5');
+    var msg=pct>=90?'ottimo lavoro, conosci bene gli argomenti.'
+      :pct>=75?'buon risultato, ripassa i punti segnati qui sotto.'
+      :pct>=60?'sufficiente, rileggi il quaderno sugli argomenti segnati.'
+      :'serve un ripasso: rileggi il quaderno e il libro e riprova.';
+    $('#rmsg').textContent=nome?nome+', '+msg:msg.charAt(0).toUpperCase()+msg.slice(1);
+    var pe=$('#pend');
+    pe.hidden=!pending;
+    if(pending)pe.textContent='La domanda aperta aspetta la correzione di un adulto: può aggiungere fino a 2 punti.';
+    var rv=$('#review');rv.innerHTML='';
+    var keys=Object.keys(lost);
+    if(!keys.length){
+      rv.appendChild(el('li','',pending?'Per ora nessun argomento da ripassare.':'Nessun argomento da ripassare.'));
+    }else{
+      keys.forEach(function(t){
+        rv.appendChild(el('li','','<b>'+TOPICS[t].name+'</b>: '+lost[t]+' '+plural(lost[t],'punto perso','punti persi')+'. Ripassa il '+TOPICS[t].where+'.'));
+      });
+    }
+  }
+
+  function buildAll(){
+    host=$('#exercises');host.innerHTML='';exs=[];finished=false;
+    $('#result').hidden=true;$('#finish').hidden=false;$('#confirm').hidden=true;$('#fin').hidden=false;
+    DEFS.forEach(function(d,i){
+      var s=section(i+1,d);
+      var ex=d.kind==='choice'?choiceEx(d,s.body):d.kind==='match'?matchEx(d,s.body):openEx(d,s.body);
+      ex.pill=s.pill;exs.push(ex);
+    });
+    refreshAll();
+  }
+
+  function finish(){
+    finished=true;
+    $('#finish').hidden=true;
+    refreshAll();updateResult();
+    var r=$('#result');r.hidden=false;
+    var reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    r.scrollIntoView({behavior:reduce?'auto':'smooth',block:'start'});
+  }
+
+  try{
+    var dt=new Date().toLocaleDateString('it-IT',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+    $('#oggi').textContent=dt.charAt(0).toUpperCase()+dt.slice(1);
+  }catch(e){}
+
+  $('#fin').addEventListener('click',function(){
+    var miss=exs.reduce(function(s,ex){return s+ex.missing();},0);
+    $('#ctext').textContent=miss
+      ?'Ci sono ancora '+miss+' '+plural(miss,'risposta','risposte')+' senza risposta. Vuoi consegnare lo stesso?'
+      :'Hai ricontrollato tutto? Dopo la consegna non puoi più cambiare le risposte.';
+    $('#confirm').hidden=false;$('#fin').hidden=true;
+  });
+  $('#back').addEventListener('click',function(){$('#confirm').hidden=true;$('#fin').hidden=false;});
+  $('#yes').addEventListener('click',finish);
+  $('#again').addEventListener('click',function(){buildAll();window.scrollTo({top:0,behavior:'auto'});});
+  buildAll();
+})();
+</script>
+
+</body>
+</html>
