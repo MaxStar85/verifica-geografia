@@ -1,0 +1,652 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Simulazione di verifica di storia</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Patrick+Hand&display=swap">
+<style>
+/* Layout: foglio a quadretti su banco di legno; ogni esercizio ha una striscia di nastro con titolo colorato e un'etichetta "Completo". Nessuna correzione finché non si preme Fine verifica. */
+:root{
+  --desk:#7a5237;
+  --paper:#fffef9;
+  --grid:#c9dbee;
+  --ink:#1d3a9e;
+  --ink-soft:#44589f;
+  --red:#e0412b;
+  --green:#2f9b48;
+  --blue:#1f6fd6;
+  --pink:#e5509a;
+  --amber:#f0a500;
+  --tape:#f4edd4;
+  --outline:#2a2a2a;
+  --sel-bg:#d5e4ff;
+  --ok-bg:#dff3e2;
+  --no-bg:#fde2dd;
+  --green-t:#1d7a33;
+  --red-t:#bd2f1b;
+  --on-amber:#16181f;
+  --num-fg:#ffffff;
+  --font-display:'Anton','Impact','Arial Narrow',sans-serif;
+  --font-body:'Patrick Hand','Comic Sans MS','Segoe Print',cursive;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --desk:#2a1c13;--paper:#1c2133;--grid:#2b3552;--ink:#b9c8ff;--ink-soft:#93a5df;
+    --red:#ff7a66;--green:#5fd37a;--blue:#6aa7ff;--pink:#ff7ab8;--amber:#ffc23d;
+    --tape:#4a4230;--outline:#121218;--sel-bg:#2b4278;--ok-bg:#1f3a2a;--no-bg:#4a2523;
+    --green-t:#7fe39a;--red-t:#ff9a8a;--num-fg:#1a0f0d;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --desk:#2a1c13;--paper:#1c2133;--grid:#2b3552;--ink:#b9c8ff;--ink-soft:#93a5df;
+  --red:#ff7a66;--green:#5fd37a;--blue:#6aa7ff;--pink:#ff7ab8;--amber:#ffc23d;
+  --tape:#4a4230;--outline:#121218;--sel-bg:#2b4278;--ok-bg:#1f3a2a;--no-bg:#4a2523;
+  --green-t:#7fe39a;--red-t:#ff9a8a;--num-fg:#1a0f0d;
+  color-scheme:dark;
+}
+
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{
+  background-color:var(--desk);
+  background-image:repeating-linear-gradient(95deg,transparent 0 38px,rgba(0,0,0,.08) 38px 40px,transparent 40px 91px,rgba(255,255,255,.035) 91px 93px);
+  color:var(--ink);
+  font-family:var(--font-body);
+  font-size:20px;
+  line-height:1.35;
+  padding-left:max(16px,env(safe-area-inset-left,0px));
+  padding-right:max(16px,env(safe-area-inset-right,0px));
+  padding-block:20px 44px;
+}
+.sheet{
+  max-width:780px;margin:0 auto;
+  background-color:var(--paper);
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:24px 24px;
+  border-radius:6px;
+  box-shadow:0 12px 32px rgba(0,0,0,.38);
+  padding:22px clamp(14px,4vw,34px) 36px;
+  display:flex;flex-direction:column;gap:34px;
+}
+button{font:inherit}
+:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+
+/* Intestazione */
+.head{display:flex;flex-direction:column;gap:14px}
+.meta{display:flex;flex-wrap:wrap;align-items:center;gap:8px 18px}
+.meta label{color:var(--red-t)}
+.meta input{
+  font:inherit;color:var(--ink);background:transparent;
+  border:0;border-bottom:2px solid var(--ink);min-width:0;flex:1 1 180px;max-width:320px;padding:4px 2px;border-radius:0;
+}
+.date{margin-left:auto;color:var(--ink-soft)}
+.mega-wrap{background:var(--tape);padding:14px 10px 10px;overflow:hidden;box-shadow:0 2px 0 rgba(0,0,0,.2);transform:rotate(-.6deg);text-align:center}
+.mega{
+  margin:0;font-family:var(--font-display);font-weight:400;
+  font-size:clamp(44px,13.5vw,120px);line-height:1;letter-spacing:.01em;
+  -webkit-text-stroke:2px var(--outline);paint-order:stroke fill;
+  display:flex;justify-content:center;
+}
+.mega .g{color:var(--green)}
+.mega .b{color:var(--blue);border-left:4px solid var(--red);padding-left:.04em;margin-left:.04em}
+.kicker{margin:0;color:var(--red-t);text-transform:uppercase;letter-spacing:.14em;font-size:18px}
+.sub{margin:0;max-width:62ch}
+.progress{height:12px;border:2px solid var(--ink);border-radius:999px;background:var(--paper);overflow:hidden}
+.bar{height:100%;width:0;background:var(--green);transition:width .3s ease}
+.prog-txt{margin:6px 0 0;color:var(--ink-soft);font-size:18px}
+
+/* Esercizi */
+#exercises{display:flex;flex-direction:column;gap:38px}
+.ex{display:flex;flex-direction:column;gap:14px}
+.strip{
+  display:flex;align-items:center;gap:6px 12px;flex-wrap:wrap;
+  background:var(--tape);padding:10px 16px 8px 12px;margin-inline:-4px;
+  transform:rotate(-.5deg);box-shadow:0 2px 0 rgba(0,0,0,.2);border-radius:2px;
+}
+.num{
+  flex:none;width:40px;height:40px;border-radius:50%;background:var(--red);color:var(--num-fg);
+  display:grid;place-items:center;font-family:var(--font-display);font-size:22px;
+}
+.strip h2{
+  margin:0;flex:1 1 170px;min-width:0;
+  font-family:var(--font-display);font-weight:400;font-size:clamp(24px,6.5vw,34px);
+  line-height:1.1;letter-spacing:.02em;text-transform:uppercase;text-wrap:balance;
+  -webkit-text-stroke:1.2px var(--outline);paint-order:stroke fill;
+}
+.state{
+  margin-left:auto;font-size:18px;white-space:nowrap;
+  color:var(--ink-soft);background:var(--paper);border:2px solid var(--ink-soft);border-radius:999px;padding:2px 14px;
+}
+.state.done{color:var(--green-t);background:var(--ok-bg);border-color:var(--green)}
+.state.fin{color:var(--ink);border-color:var(--ink)}
+.istr{margin:0;color:var(--ink-soft)}
+.exbody{display:flex;flex-direction:column;gap:12px}
+.exbody.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:12px}
+
+.q{background:var(--paper);border:2px solid var(--ink-soft);border-radius:10px;padding:12px 14px;min-width:0}
+.prompt{margin:0}
+.prompt .g{color:var(--green-t);font-family:var(--font-display);letter-spacing:.04em}
+.blank{display:inline-block;min-width:3.2em;border-bottom:2px solid var(--ink);margin-inline:2px}
+.opts{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px}
+.opt{
+  color:var(--ink);background:var(--tape);border:2px solid var(--ink);border-radius:999px;
+  padding:8px 18px 8px 12px;min-height:44px;cursor:pointer;display:inline-flex;align-items:center;gap:10px;text-align:left;
+}
+.dot{flex:none;width:18px;height:18px;border-radius:50%;border:2px solid var(--ink);background:var(--paper)}
+.opt.sel{background:var(--sel-bg);border-color:var(--blue);box-shadow:inset 0 0 0 2px var(--blue)}
+.opt.sel .dot{background:var(--ink);box-shadow:inset 0 0 0 3px var(--paper)}
+@media (hover:hover){.opt:hover:not(:disabled):not(.sel),.cell:hover:not(:disabled):not(.paired){background:var(--amber);color:var(--on-amber)}}
+.opt:disabled,.cell:disabled{cursor:default;color:var(--ink)}
+.opt.ok{background:var(--ok-bg);border-color:var(--green)}
+.opt.no{background:var(--no-bg);border-color:var(--red)}
+.opt.ok .dot,.opt.no .dot{background:var(--paper)}
+.mark{font-weight:700}
+.opt.ok .mark{color:var(--green-t)}
+.opt.no .mark{color:var(--red-t)}
+.fb{margin:8px 0 0}
+.fb:empty{display:none}
+.fb.good{color:var(--green-t)}
+.fb.bad{color:var(--red-t)}
+.q.compact{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px}
+.q.compact .prompt{font-size:21px;flex:1 1 140px}
+.q.compact .opts{margin:0}
+.q.compact .fb{flex-basis:100%;margin:0}
+
+/* Collega */
+.match{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:12px 14px}
+.col{display:flex;flex-direction:column;gap:10px;min-width:0}
+.cell{
+  position:relative;color:var(--ink);background:var(--tape);border:2px solid var(--ink);border-radius:14px;
+  padding:10px 12px 8px 20px;min-height:56px;cursor:pointer;text-align:left;display:flex;align-items:center;gap:8px;min-width:0;
+  overflow-wrap:anywhere;
+}
+.cell.sel{background:var(--amber);color:var(--on-amber);border-color:var(--outline)}
+.cell.paired{border-color:var(--pc);box-shadow:inset 0 0 0 2px var(--pc)}
+.cell.ok{background:var(--ok-bg)}
+.cell.no{background:var(--no-bg)}
+.badge{
+  position:absolute;top:-10px;left:-8px;min-width:26px;height:26px;border-radius:50%;background:var(--pc);color:#fff;font-size:16px;
+  display:grid;place-items:center;text-shadow:0 0 2px rgba(0,0,0,.6);border:2px solid var(--paper);
+}
+.cell .lbl{font-size:19px;letter-spacing:.03em;text-transform:uppercase;overflow-wrap:break-word;min-width:0}
+.cell .txt{font-size:18px;line-height:1.2}
+.av{flex:none;width:50px;height:50px;border-radius:12px;background:var(--tape)}
+.av .st{fill:none;stroke:var(--outline);stroke-width:1.6}
+.av .st2{stroke:var(--outline);stroke-width:1.4}
+.av .ink{fill:var(--outline)}
+.hint{margin:10px 0 0;color:var(--ink-soft);font-size:18px}
+.corr{margin:12px 0 0;padding:10px 12px;border-left:5px solid var(--red);background:var(--no-bg)}
+.corr p{margin:0 0 6px}
+.corr ul{margin:0;padding-left:20px}
+.corr b{font-weight:400;color:var(--red-t);text-transform:uppercase;letter-spacing:.03em}
+
+/* Risposta aperta */
+textarea{
+  width:100%;min-height:96px;margin-top:10px;font:inherit;color:var(--ink);background:var(--paper);
+  border:2px solid var(--ink);border-radius:10px;padding:10px;resize:vertical;
+}
+.btn{
+  color:var(--ink);background:var(--tape);border:2px solid var(--ink);border-radius:999px;padding:8px 20px;min-height:44px;cursor:pointer;
+}
+.btn.primary{background:var(--red);color:var(--num-fg);border-color:var(--outline)}
+.btn.sel{background:var(--sel-bg);border-color:var(--blue);box-shadow:inset 0 0 0 2px var(--blue)}
+.adult{margin:12px 0 0;padding:10px 12px;border-left:5px solid var(--green);background:var(--ok-bg)}
+.adult p{margin:0 0 8px}
+.score-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+
+/* Fine e risultato */
+.finish{display:flex;flex-direction:column;gap:14px;align-items:flex-start}
+.confirm{display:flex;flex-direction:column;gap:12px;border:2px dashed var(--ink-soft);border-radius:12px;padding:14px;background:var(--paper);max-width:100%}
+.confirm p{margin:0}
+.result{display:flex;flex-direction:column;gap:14px;scroll-margin-top:16px}
+.big{margin:0;font-family:var(--font-display);font-size:clamp(54px,16vw,96px);line-height:1;color:var(--blue);-webkit-text-stroke:1.6px var(--outline);paint-order:stroke fill}
+.big small{font-size:.5em;color:var(--ink-soft);-webkit-text-stroke:0}
+.stars{display:flex;gap:6px}
+.stars svg{width:38px;height:38px}
+.stars .on{fill:var(--amber);stroke:var(--outline);stroke-width:1.5}
+.stars .off{fill:none;stroke:var(--ink-soft);stroke-width:1.5}
+.review{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:8px}
+.review li{background:var(--paper);border:2px solid var(--ink-soft);border-radius:10px;padding:8px 12px}
+.review b{color:var(--red-t);font-weight:400}
+.pending{margin:0;padding:8px 12px;border:2px dashed var(--amber);border-radius:10px}
+
+@media (max-width:460px){
+  body{font-size:19px}
+  .match{gap:10px;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr)}
+  .cell.hasav{flex-direction:column;justify-content:center;text-align:center;gap:4px}
+  .av{width:42px;height:42px}
+  .cell{padding:8px 8px 6px 16px}
+  .cell.hasav{padding:10px 8px 6px}
+  .cell .lbl{font-size:16px}
+  .cell .txt{font-size:16px}
+  .date{margin-left:0}
+}
+@media (prefers-reduced-motion:reduce){
+  .bar{transition:none}
+}
+</style>
+</head>
+<body>
+
+
+<main class="sheet">
+  <header class="head">
+    <div class="meta">
+      <label for="nome">Nome</label>
+      <input id="nome" type="text" autocomplete="off" placeholder="scrivi qui">
+      <span class="date" id="oggi"></span>
+    </div>
+    <div class="mega-wrap"><h1 class="mega" aria-label="Storia"><span class="g">STO</span><span class="b">RIA</span></h1></div>
+    <p class="kicker">Simulazione di verifica</p>
+    <p class="sub">Tocca la risposta che pensi sia giusta. Puoi cambiarla quante volte vuoi. La correzione compare solo quando premi <b>Fine verifica</b>, in fondo alla pagina.</p>
+    <div>
+      <div class="progress" role="progressbar" aria-label="Esercizi completi" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div class="bar" id="bar"></div></div>
+      <p class="prog-txt" id="prog"></p>
+    </div>
+  </header>
+
+  <div id="exercises"></div>
+
+  <div class="finish" id="finish">
+    <button class="btn primary" id="fin" type="button">Fine verifica</button>
+    <div class="confirm" id="confirm" hidden>
+      <p id="ctext"></p>
+      <div class="score-row">
+        <button class="btn primary" id="yes" type="button">Sì, consegno</button>
+        <button class="btn" id="back" type="button">Torna alla verifica</button>
+      </div>
+    </div>
+  </div>
+
+  <section class="result" id="result" hidden aria-live="polite">
+    <div class="strip"><h2 id="rtitle"></h2></div>
+    <p class="big"><span id="rs">0</span> <small>su <span id="rm">0</span></small></p>
+    <div class="stars" id="stars" role="img"></div>
+    <p id="rmsg" style="margin:0"></p>
+    <p class="pending" id="pend" hidden></p>
+    <ul class="review" id="review"></ul>
+    <p style="margin:0;color:var(--ink-soft)">Sali nella pagina per vedere le risposte giuste esercizio per esercizio.</p>
+    <div><button class="btn" id="again" type="button">Rifai la verifica</button></div>
+  </section>
+</main>
+
+<script>
+(function(){
+  'use strict';
+  var COLORS=['var(--blue)','var(--pink)','var(--amber)','var(--green)','var(--red)'];
+  var PAIRC=['#1f6fd6','#e5509a','#d98f00','#2f9b48','#e0412b','#8a5cd6','#12a0a0','#d9731a'];
+  var TOPICS={
+    storia:{name:'Cos’è la Storia e come lavora lo storico',where:'quaderno “Che cos’è la storia” e libro, pagina 6'},
+    fonti:{name:'Le fonti storiche',where:'quaderno del 6 e del 13 ottobre e libro, pagina 6'},
+    studiosi:{name:'Studiose e studiosi del passato',where:'quaderno (storico, archeologo, paleontologo, geologo) e libro, pagina 7'},
+    linea:{name:'La linea del tempo (a.C. e d.C.)',where:'quaderno del 16 novembre e libro, pagina 12'},
+    tempo:{name:'La durata e i periodi di tempo',where:'quaderno del 10 novembre e libro, pagina 13'}
+  };
+  var host,exs=[],finished=false;
+
+  function $(s,r){return (r||document).querySelector(s);}
+  function el(tag,cls,html){var e=document.createElement(tag);if(cls)e.className=cls;if(html!=null)e.innerHTML=html;return e;}
+  function rainbow(t){var i=0;return Array.from(t).map(function(ch){return ch===' '?' ':'<span style="color:'+COLORS[i++%COLORS.length]+'">'+ch+'</span>';}).join('');}
+  function shuffle(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t;}return a;}
+  function plural(n,one,many){return n===1?one:many;}
+
+  function labelOnly(p){return '<span class="lbl">'+p.l+'</span>';}
+
+  /* Contenuto: solo dalle pagine del quaderno e del libro di Storia */
+  var DEFS=[
+    {title:'Completa la frase',instr:'Scegli la parola giusta.',kind:'choice',items:[
+      {id:'1a',topic:'storia',prompt:'La Storia è lo studio dei fatti del <span class="blank"></span>.',opts:['futuro','passato','presente'],ans:1},
+      {id:'1b',topic:'storia',prompt:'Le tracce che ci danno informazioni sul passato si chiamano <span class="blank"></span>.',opts:['fonti','ricette','mappe'],ans:0},
+      {id:'1c',topic:'storia',prompt:'I protagonisti della storia sono gli uomini e le <span class="blank"></span>.',opts:['macchine','donne','stelle'],ans:1},
+      {id:'1d',topic:'storia',prompt:'Un manufatto è un oggetto realizzato a <span class="blank"></span>.',opts:['caso','mano','scuola'],ans:1}
+    ]},
+    {title:'Collega le fonti',instr:'Tocca una voce a sinistra e poi quella giusta a destra. Per cambiare, tocca di nuovo una voce già collegata.',kind:'match',topic:'fonti',left:labelOnly,pairs:[
+      {l:'Fonti scritte',r:'libri, giornali, diari, lettere'},
+      {l:'Fonti visive',r:'dipinti, disegni, fotografie, video'},
+      {l:'Fonti orali',r:'testimonianze, racconti, canti popolari'},
+      {l:'Fonti materiali',r:'vasi, armi, gioielli, attrezzi'}
+    ]},
+    {title:'Che fonte è?',instr:'Leggi con attenzione e scegli il tipo di fonte.',kind:'choice',items:[
+      {id:'3a',topic:'fonti',prompt:'Una fotografia di tanti anni fa è una fonte…',opts:['visiva','orale','materiale'],ans:0},
+      {id:'3b',topic:'fonti',prompt:'Il nonno racconta come giocava da bambino. È una fonte…',opts:['scritta','orale','visiva'],ans:1},
+      {id:'3c',topic:'fonti',prompt:'Una punta di freccia trovata sotto terra è una fonte…',opts:['materiale','scritta','orale'],ans:0},
+      {id:'3d',topic:'fonti',prompt:'Una lettera antica è una fonte…',opts:['materiale','visiva','scritta'],ans:2}
+    ]},
+    {title:'Vero o falso?',kind:'choice',compact:true,items:[
+      {id:'4a',topic:'fonti',prompt:'Le fonti sono tracce che danno informazioni sul passato.',opts:['Vero','Falso'],ans:0},
+      {id:'4b',topic:'fonti',prompt:'Gli edifici e le statue antiche sono fonti orali.',opts:['Vero','Falso'],ans:1},
+      {id:'4c',topic:'fonti',prompt:'Le leggende e i canti popolari sono fonti orali.',opts:['Vero','Falso'],ans:0},
+      {id:'4d',topic:'storia',prompt:'Se le informazioni non bastano, gli storici fanno delle ipotesi.',opts:['Vero','Falso'],ans:0},
+      {id:'4e',topic:'storia',prompt:'Gli storici lavorano sempre da soli.',opts:['Vero','Falso'],ans:1}
+    ]},
+    {title:'Chi studia cosa?',instr:'Collega ogni studioso a quello che fa.',kind:'match',topic:'studiosi',left:labelOnly,pairs:[
+      {l:'Storico',r:'Ricostruisce il passato con le fonti scritte'},
+      {l:'Archeologo',r:'Cerca i reperti con lo scavo'},
+      {l:'Paleontologo',r:'Studia i fossili di animali e piante'},
+      {l:'Geologo',r:'Studia le rocce e gli strati del terreno'},
+      {l:'Paleoantropologo',r:'Studia i resti degli esseri umani antichissimi'}
+    ]},
+    {title:'Chi sono?',instr:'Leggi l’indizio e scegli il nome giusto.',kind:'choice',items:[
+      {id:'6a',topic:'studiosi',prompt:'Scavo nel terreno per trovare i reperti: vasi, armi, resti di edifici. Sono l’…',opts:['Archeologo','Geologo','Storico'],ans:0},
+      {id:'6b',topic:'studiosi',prompt:'Studio le rocce e posso dire quanti anni hanno. Sono il…',opts:['Paleontologo','Geologo','Archeologo'],ans:1},
+      {id:'6c',topic:'studiosi',prompt:'Studio i fossili: i resti di animali e piante che si sono conservati nella roccia. Sono il…',opts:['Paleontologo','Storico','Geologo'],ans:0}
+    ]},
+    {title:'La linea del tempo',instr:'Rileggi la pagina del quaderno del 16 novembre.',kind:'choice',items:[
+      {id:'7a',topic:'linea',prompt:'Mettere i fatti in ordine cronologico significa metterli in ordine di <span class="blank"></span>.',opts:['grandezza','tempo','alfabeto'],ans:1},
+      {id:'7b',topic:'linea',prompt:'Sulla linea del tempo il tempo scorre di solito da <span class="blank"></span>.',opts:['destra a sinistra','sinistra a destra','alto a basso'],ans:1},
+      {id:'7c',topic:'linea',prompt:'Il punto di riferimento per contare gli anni è la <span class="blank"></span> di Cristo.',opts:['nascita','morte','partenza'],ans:0},
+      {id:'7d',topic:'linea',prompt:'La nascita di Cristo corrisponde all’anno <span class="blank"></span>.',opts:['cento','zero','uno'],ans:1}
+    ]},
+    {title:'Prima o dopo Cristo?',instr:'Collega la sigla a quello che significa.',kind:'match',topic:'linea',left:labelOnly,pairs:[
+      {l:'a.C.',r:'avanti Cristo: anni prima della nascita di Cristo'},
+      {l:'d.C.',r:'dopo Cristo: anni dopo la nascita di Cristo'},
+      {l:'Anno zero',r:'la nascita di Cristo'},
+      {l:'Ordine cronologico',r:'i fatti in successione, dal più antico al più recente'}
+    ]},
+    {title:'Quanto dura?',instr:'Collega ogni periodo di tempo alla sua durata.',kind:'match',topic:'tempo',left:labelOnly,pairs:[
+      {l:'Giorno',r:'24 ore'},
+      {l:'Settimana',r:'7 giorni'},
+      {l:'Mese',r:'circa 30 giorni'},
+      {l:'Anno',r:'12 mesi, cioè 365 giorni'},
+      {l:'Lustro',r:'5 anni'},
+      {l:'Decennio',r:'10 anni'},
+      {l:'Secolo',r:'100 anni'},
+      {l:'Millennio',r:'1000 anni'}
+    ]},
+    {title:'Il tempo e la Terra',kind:'choice',items:[
+      {id:'10a',topic:'tempo',prompt:'Quando la Terra gira su se stessa passa un <span class="blank"></span>.',opts:['mese','giorno','anno'],ans:1},
+      {id:'10b',topic:'tempo',prompt:'Un giorno è diviso in 24 parti uguali chiamate <span class="blank"></span>.',opts:['minuti','secondi','ore'],ans:2},
+      {id:'10c',topic:'tempo',prompt:'L’unità di misura fondamentale del tempo è il <span class="blank"></span>.',opts:['secondo','minuto','giorno'],ans:0},
+      {id:'10d',topic:'tempo',prompt:'Quando la Terra gira intorno al Sole passano 365 giorni e si alternano le <span class="blank"></span>.',opts:['stagioni','notti','ore'],ans:0}
+    ]},
+    {title:'Quale misura usare?',instr:'Scegli l’unità di misura più adatta.',kind:'choice',items:[
+      {id:'11a',topic:'tempo',prompt:'Per misurare un fatto breve si usano…',opts:['i minuti e le ore','i secoli','i millenni'],ans:0},
+      {id:'11b',topic:'tempo',prompt:'Per misurare un fatto più lungo si usano…',opts:['i secondi','i giorni, le settimane, i mesi, gli anni','soltanto i minuti'],ans:1},
+      {id:'11c',topic:'tempo',prompt:'La storia della Terra, che dura milioni di anni, si misura in…',opts:['settimane','lustri','ere'],ans:2}
+    ]},
+    {title:'Rispondi con parole tue',kind:'open',topic:'studiosi',max:2,
+      prompt:'Perché gli storici hanno bisogno dell’aiuto di altri studiosi?',
+      sample:'Perché le fonti da analizzare sono tante e diverse. Archeologi, geologi, paleontologi e paleoantropologi aiutano gli storici a trovare nuove fonti, a studiarle e a interpretarle.'}
+  ];
+
+  function section(n,d){
+    var s=el('section','ex');
+    var strip=el('div','strip');
+    strip.appendChild(el('span','num',String(n)));
+    strip.appendChild(el('h2','',rainbow(d.title)));
+    var pill=el('span','state','Da completare');
+    strip.appendChild(pill);
+    s.appendChild(strip);
+    if(d.instr)s.appendChild(el('p','istr',d.instr));
+    var b=el('div','exbody'+(d.cls?' '+d.cls:''));
+    s.appendChild(b);
+    host.appendChild(s);
+    return {body:b,pill:pill};
+  }
+
+  /* Scelta singola: la risposta si può cambiare finché non finisce la verifica */
+  function choiceEx(d,body){
+    var ans={},qs=[];
+    d.items.forEach(function(it){
+      ans[it.id]=-1;
+      var q=el('div','q'+(d.compact?' compact':''));
+      q.appendChild(el('p','prompt',it.prompt));
+      var opts=el('div','opts');
+      var fb=el('p','fb');
+      var btns=it.opts.map(function(t,i){
+        var b=el('button','opt','<span class="dot" aria-hidden="true"></span><span class="t">'+t+'</span><span class="mark"></span>');
+        b.type='button';b.setAttribute('aria-pressed','false');
+        b.addEventListener('click',function(){
+          if(finished)return;
+          ans[it.id]=(ans[it.id]===i?-1:i);
+          refreshAll();
+        });
+        opts.appendChild(b);
+        return b;
+      });
+      q.appendChild(opts);q.appendChild(fb);body.appendChild(q);
+      qs.push({it:it,btns:btns,fb:fb});
+    });
+    return {
+      max:d.items.length,
+      complete:function(){return qs.every(function(x){return ans[x.it.id]>=0;});},
+      missing:function(){return qs.filter(function(x){return ans[x.it.id]<0;}).length;},
+      score:function(){return qs.filter(function(x){return ans[x.it.id]===x.it.ans;}).length;},
+      lost:function(map){qs.forEach(function(x){if(ans[x.it.id]!==x.it.ans)map[x.it.topic]=(map[x.it.topic]||0)+1;});},
+      refresh:function(){
+        qs.forEach(function(x){
+          var a=ans[x.it.id];
+          x.btns.forEach(function(b,i){
+            var sel=a===i;
+            b.setAttribute('aria-pressed',sel?'true':'false');
+            var mk=b.querySelector('.mark');
+            if(finished){
+              var ok=i===x.it.ans;
+              b.disabled=true;
+              b.classList.remove('sel');
+              b.classList.toggle('ok',ok);
+              b.classList.toggle('no',sel&&!ok);
+              mk.textContent=ok?'✓':(sel?'✗':'');
+            }else{
+              b.classList.toggle('sel',sel);
+            }
+          });
+          if(finished){
+            var right=a===x.it.ans;
+            x.fb.className='fb '+(right?'good':'bad');
+            x.fb.textContent=right?'Giusto.':(a<0?'Non hai risposto. ':'')+'La risposta giusta è: '+x.it.opts[x.it.ans]+'.';
+          }
+        });
+      }
+    };
+  }
+
+  /* Collega: si può scollegare e ricollegare quante volte si vuole */
+  function matchEx(d,body){
+    var n=d.pairs.length,L2R=[],R2L=[],i;
+    for(i=0;i<n;i++){L2R.push(-1);R2L.push(-1);}
+    var order=shuffle(d.pairs.map(function(p,k){return k;}));
+    var sel=null,lb=[],rb=[];
+    var q=el('div','q'),g=el('div','match'),lc=el('div','col'),rc=el('div','col');
+    var corr=el('div','corr');corr.hidden=true;
+
+    function unpairL(l){var r=L2R[l];if(r>=0){R2L[r]=-1;L2R[l]=-1;}}
+    function unpairR(r){var l=R2L[r];if(l>=0){L2R[l]=-1;R2L[r]=-1;}}
+    function click(side,k){
+      if(sel&&sel.side!==side){
+        var l=side==='L'?k:sel.i,r=side==='R'?k:sel.i;
+        unpairL(l);unpairR(r);
+        L2R[l]=r;R2L[r]=l;sel=null;return;
+      }
+      if(sel&&sel.side===side&&sel.i===k){sel=null;return;}
+      if(side==='L')unpairL(k);else unpairR(k);
+      sel={side:side,i:k};
+    }
+    function mk(side,k){
+      var html=side==='L'?d.left(d.pairs[k]):'<span class="txt">'+d.pairs[k].r+'</span>';
+      var b=el('button','cell'+(html.indexOf('class="av"')>=0?' hasav':''),html);
+      b.type='button';b.setAttribute('aria-pressed','false');
+      b.addEventListener('click',function(){if(finished)return;click(side,k);refreshAll();});
+      return b;
+    }
+    for(i=0;i<n;i++){lb[i]=mk('L',i);lc.appendChild(lb[i]);}
+    order.forEach(function(k){rb[k]=mk('R',k);rc.appendChild(rb[k]);});
+    g.appendChild(lc);g.appendChild(rc);q.appendChild(g);q.appendChild(corr);body.appendChild(q);
+
+    function deco(b,num,color){
+      var old=b.querySelector('.badge');if(old)old.remove();
+      b.classList.remove('paired');b.style.removeProperty('--pc');
+      if(num){b.insertBefore(el('span','badge',String(num)),b.firstChild);b.classList.add('paired');b.style.setProperty('--pc',color);}
+    }
+    function score(){var s=0;for(var k=0;k<n;k++)if(L2R[k]===k)s++;return s;}
+    return {
+      max:n,
+      complete:function(){return L2R.every(function(r){return r>=0;});},
+      missing:function(){return L2R.filter(function(r){return r<0;}).length;},
+      score:score,
+      lost:function(map){var s=score();if(s<n)map[d.topic]=(map[d.topic]||0)+(n-s);},
+      refresh:function(){
+        var k;
+        for(k=0;k<n;k++){
+          var r=L2R[k];
+          deco(lb[k],r>=0?k+1:0,PAIRC[k%PAIRC.length]);
+          lb[k].classList.toggle('sel',!!sel&&sel.side==='L'&&sel.i===k);
+          lb[k].setAttribute('aria-pressed',(!!sel&&sel.side==='L'&&sel.i===k)?'true':'false');
+        }
+        for(k=0;k<n;k++){
+          var l=R2L[k];
+          deco(rb[k],l>=0?l+1:0,PAIRC[(l>=0?l:0)%PAIRC.length]);
+          rb[k].classList.toggle('sel',!!sel&&sel.side==='R'&&sel.i===k);
+          rb[k].setAttribute('aria-pressed',(!!sel&&sel.side==='R'&&sel.i===k)?'true':'false');
+        }
+        if(finished){
+          var wrong=[];
+          for(k=0;k<n;k++){
+            lb[k].disabled=true;rb[k].disabled=true;
+            lb[k].classList.remove('sel');rb[k].classList.remove('sel');
+            var okL=L2R[k]===k;
+            lb[k].classList.toggle('ok',okL);lb[k].classList.toggle('no',!okL);
+            if(R2L[k]>=0){var okR=R2L[k]===k;rb[k].classList.toggle('ok',okR);rb[k].classList.toggle('no',!okR);}
+            if(!okL)wrong.push('<li><b>'+d.pairs[k].l+'</b>: '+d.pairs[k].r+'</li>');
+          }
+          corr.hidden=false;
+          corr.innerHTML=wrong.length?'<p>Le coppie giuste erano:</p><ul>'+wrong.join('')+'</ul>':'<p style="margin:0;color:var(--green-t)">Tutte le coppie sono giuste.</p>';
+          if(!wrong.length)corr.style.cssText='border-left-color:var(--green);background:var(--ok-bg)';
+        }
+      }
+    };
+  }
+
+  /* Risposta aperta: la corregge un adulto dopo la consegna */
+  function openEx(d,body){
+    var q=el('div','q'),score=-1;
+    q.appendChild(el('p','prompt',d.prompt));
+    var ta=el('textarea');ta.id='risposta-aperta';ta.setAttribute('aria-label','La tua risposta');
+    ta.placeholder='Scrivi qui la tua risposta.';
+    ta.addEventListener('input',function(){refreshAll();});
+    q.appendChild(ta);
+    var adult=el('div','adult');adult.hidden=true;
+    adult.innerHTML='<p><b>Risposta di esempio:</b> '+d.sample+'</p><p>Un adulto legge la risposta e assegna il punteggio:</p>';
+    var row=el('div','score-row'),sb=[];
+    [['0 punti',0],['1 punto',1],['2 punti',2]].forEach(function(s){
+      var b=el('button','btn',s[0]);b.type='button';
+      b.addEventListener('click',function(){
+        score=s[1];
+        sb.forEach(function(x){x.classList.remove('sel');});
+        b.classList.add('sel');
+        refreshAll();updateResult();
+      });
+      sb.push(b);row.appendChild(b);
+    });
+    adult.appendChild(row);q.appendChild(adult);body.appendChild(q);
+    return {
+      max:d.max,
+      complete:function(){return ta.value.trim().length>0;},
+      missing:function(){return ta.value.trim().length>0?0:1;},
+      score:function(){return score<0?0:score;},
+      pending:function(){return finished&&score<0;},
+      lost:function(map){if(score>=0&&score<d.max)map[d.topic]=(map[d.topic]||0)+(d.max-score);},
+      refresh:function(){if(finished){ta.readOnly=true;adult.hidden=false;}}
+    };
+  }
+
+  function refreshAll(){
+    var done=0;
+    exs.forEach(function(ex){
+      ex.refresh();
+      var c=ex.complete();
+      if(c)done++;
+      if(finished){
+        ex.pill.textContent=(ex.pending&&ex.pending())?'da correggere':ex.score()+' su '+ex.max;
+        ex.pill.className='state fin';
+      }else{
+        ex.pill.textContent=c?'✓ Completo':'Da completare';
+        ex.pill.className='state'+(c?' done':'');
+      }
+    });
+    $('#bar').style.width=(exs.length?Math.round(done/exs.length*100):0)+'%';
+    $('.progress').setAttribute('aria-valuenow',String(exs.length?Math.round(done/exs.length*100):0));
+    $('#prog').textContent='Esercizi completi: '+done+' su '+exs.length;
+  }
+
+  function star(on){
+    return '<svg viewBox="0 0 24 24" aria-hidden="true"><path class="'+(on?'on':'off')+'" d="M12 2.5l2.9 6.1 6.6.8-4.9 4.6 1.3 6.6L12 17.2 6.1 20.6l1.3-6.6L2.5 9.4l6.6-.8z"/></svg>';
+  }
+
+  function updateResult(){
+    var pts=0,max=0,lost={},pending=false;
+    exs.forEach(function(ex){
+      pts+=ex.score();max+=ex.max;ex.lost(lost);
+      if(ex.pending&&ex.pending())pending=true;
+    });
+    var nome=($('#nome').value||'').trim();
+    $('#rtitle').innerHTML=rainbow('Risultato');
+    $('#rs').textContent=String(pts);
+    $('#rm').textContent=String(max);
+    var pct=max?pts/max*100:0;
+    var filled=Math.round(pct/100*5),st='',i;
+    for(i=0;i<5;i++)st+=star(i<filled);
+    $('#stars').innerHTML=st;
+    $('#stars').setAttribute('aria-label',filled+' stelle su 5');
+    var msg=pct>=90?'ottimo lavoro, conosci bene gli argomenti.'
+      :pct>=75?'buon risultato, ripassa i punti segnati qui sotto.'
+      :pct>=60?'sufficiente, rileggi il quaderno sugli argomenti segnati.'
+      :'serve un ripasso: rileggi il quaderno e il libro e riprova.';
+    $('#rmsg').textContent=nome?nome+', '+msg:msg.charAt(0).toUpperCase()+msg.slice(1);
+    var pe=$('#pend');
+    pe.hidden=!pending;
+    if(pending)pe.textContent='La domanda aperta aspetta la correzione di un adulto: può aggiungere fino a 2 punti.';
+    var rv=$('#review');rv.innerHTML='';
+    var keys=Object.keys(lost);
+    if(!keys.length){
+      rv.appendChild(el('li','',pending?'Per ora nessun argomento da ripassare.':'Nessun argomento da ripassare.'));
+    }else{
+      keys.forEach(function(t){
+        rv.appendChild(el('li','','<b>'+TOPICS[t].name+'</b>: '+lost[t]+' '+plural(lost[t],'punto perso','punti persi')+'. Ripassa il '+TOPICS[t].where+'.'));
+      });
+    }
+  }
+
+  function buildAll(){
+    host=$('#exercises');host.innerHTML='';exs=[];finished=false;
+    $('#result').hidden=true;$('#finish').hidden=false;$('#confirm').hidden=true;$('#fin').hidden=false;
+    DEFS.forEach(function(d,i){
+      var s=section(i+1,d);
+      var ex=d.kind==='choice'?choiceEx(d,s.body):d.kind==='match'?matchEx(d,s.body):openEx(d,s.body);
+      ex.pill=s.pill;exs.push(ex);
+    });
+    refreshAll();
+  }
+
+  function finish(){
+    finished=true;
+    $('#finish').hidden=true;
+    refreshAll();updateResult();
+    var r=$('#result');r.hidden=false;
+    var reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    r.scrollIntoView({behavior:reduce?'auto':'smooth',block:'start'});
+  }
+
+  try{
+    var dt=new Date().toLocaleDateString('it-IT',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+    $('#oggi').textContent=dt.charAt(0).toUpperCase()+dt.slice(1);
+  }catch(e){}
+
+  $('#fin').addEventListener('click',function(){
+    var miss=exs.reduce(function(s,ex){return s+ex.missing();},0);
+    $('#ctext').textContent=miss
+      ?'Ci sono ancora '+miss+' '+plural(miss,'risposta','risposte')+' senza risposta. Vuoi consegnare lo stesso?'
+      :'Hai ricontrollato tutto? Dopo la consegna non puoi più cambiare le risposte.';
+    $('#confirm').hidden=false;$('#fin').hidden=true;
+  });
+  $('#back').addEventListener('click',function(){$('#confirm').hidden=true;$('#fin').hidden=false;});
+  $('#yes').addEventListener('click',finish);
+  $('#again').addEventListener('click',function(){buildAll();window.scrollTo({top:0,behavior:'auto'});});
+  buildAll();
+})();
+</script>
+
+</body>
+</html>
